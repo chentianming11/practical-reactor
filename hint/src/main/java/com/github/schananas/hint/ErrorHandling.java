@@ -8,7 +8,8 @@ class houston_we_have_a_problem
         extends AbstractMojo implements Hint {
 
     public void execute() {
-        printHint("Without modifying the final sequence, you want execute additional behavior on error termination: https://projectreactor.io/docs/core/release/reference/#which.peeking. Also see Example 7: https://projectreactor.io/docs/core/release/reference/#_asynchronicity_to_the_rescue.");
+        printHint(
+                "Without modifying the final sequence, you want execute additional behavior on error termination: https://projectreactor.io/docs/core/release/reference/#which.peeking. Also see Example 7: https://projectreactor.io/docs/core/release/reference/#_asynchronicity_to_the_rescue.");
     }
 }
 
@@ -17,7 +18,8 @@ class potato_potato
         extends AbstractMojo implements Hint {
 
     public void execute() {
-        printHint("You want the try/catch equivalent of catching an exception and wrapping and re-throwing: https://projectreactor.io/docs/core/release/reference/#which.errors");
+        printHint(
+                "You want the try/catch equivalent of catching an exception and wrapping and re-throwing: https://projectreactor.io/docs/core/release/reference/#which.errors");
     }
 }
 
@@ -26,7 +28,8 @@ class under_the_rug
         extends AbstractMojo implements Hint {
 
     public void execute() {
-        printHint("You want to recover from errors by falling back to a Publisher or Mono, possibly a empty one: https://projectreactor.io/docs/core/release/reference/#which.errors");
+        printHint(
+                "You want to recover from errors by falling back to a Publisher or Mono, possibly a empty one: https://projectreactor.io/docs/core/release/reference/#which.errors");
     }
 }
 
@@ -35,7 +38,8 @@ class have_a_backup
         extends AbstractMojo implements Hint {
 
     public void execute() {
-        printHint("You want to recover from errors by falling back to a Publisher or Mono, possibly different ones depending on the error: https://projectreactor.io/docs/core/release/reference/#which.errors");
+        printHint(
+                "You want to recover from errors by falling back to a Publisher or Mono, possibly different ones depending on the error: https://projectreactor.io/docs/core/release/reference/#which.errors");
     }
 }
 

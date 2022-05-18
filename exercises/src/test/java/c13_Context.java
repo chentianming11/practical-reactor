@@ -31,20 +31,21 @@ public class c13_Context extends ContextBase {
      * id to the Reactor context. Your task is to extract the correlation id and attach it to the message object.
      */
     public Mono<Message> messageHandler(String payload) {
-        //todo: do your changes withing this method
-        return Mono.just(new Message("set correlation_id from context here", payload));
+        // todo: do your changes withing this method
+        return Mono
+                .deferContextual(contextView -> Mono.just(new Message(contextView.get(HTTP_CORRELATION_ID), payload)));
     }
 
     @Test
     public void message_tracker() {
-        //don't change this code
+        // don't change this code
         Mono<Message> mono = messageHandler("Hello World!")
                 .contextWrite(Context.of(HTTP_CORRELATION_ID, "2-j3r9afaf92j-afkaf"));
 
         StepVerifier.create(mono)
-                    .expectNextMatches(m -> m.correlationId.equals("2-j3r9afaf92j-afkaf") && m.payload.equals(
-                            "Hello World!"))
-                    .verifyComplete();
+                .expectNextMatches(m -> m.correlationId.equals("2-j3r9afaf92j-afkaf") && m.payload.equals(
+                        "Hello World!"))
+                .verifyComplete();
     }
 
     /**
@@ -52,20 +53,20 @@ public class c13_Context extends ContextBase {
      */
     @Test
     public void execution_counter() {
+        AtomicInteger atomicInteger = new AtomicInteger();
         Mono<Void> repeat = Mono.deferContextual(ctx -> {
             ctx.get(AtomicInteger.class).incrementAndGet();
             return openConnection();
-        });
-        //todo: change this line only
-        ;
+        }).contextWrite(context -> context.put(AtomicInteger.class, atomicInteger));
 
         StepVerifier.create(repeat.repeat(4))
-                    .thenAwait(Duration.ofSeconds(10))
-                    .expectAccessibleContext()
-                    .assertThat(ctx -> {
-                        assert ctx.get(AtomicInteger.class).get() == 5;
-                    }).then()
-                    .expectComplete().verify();
+                .thenAwait(Duration.ofSeconds(10))
+                .expectAccessibleContext()
+                .assertThat(ctx -> {
+                    System.out.println(ctx.get(AtomicInteger.class).get());
+                    assert ctx.get(AtomicInteger.class).get() == 5;
+                }).then()
+                .expectComplete().verify();
     }
 
     /**
@@ -76,19 +77,32 @@ public class c13_Context extends ContextBase {
      */
     @Test
     public void pagination() {
-        AtomicInteger pageWithError = new AtomicInteger(); //todo: set this field when error occurs
+        AtomicInteger pageWithError = new AtomicInteger(); // todo: set this field when error occurs
+        AtomicInteger pageCount = new AtomicInteger();
 
-        //todo: start from here
-        Flux<Integer> results = getPage(1)
+        Flux<Integer> results = Mono.deferContextual(contextView -> {
+            int page = contextView.get(AtomicInteger.class).get();
+            return Mono.defer(() -> getPage(page))
+                    .onErrorResume(err -> {
+                        pageWithError.set(page);
+                        return Mono.empty();
+                    });
+        })
+                .doOnEach(integerSignal -> {
+                    if (integerSignal.isOnComplete()) {
+                        System.out.println(integerSignal);
+                        integerSignal.getContextView().get(AtomicInteger.class).incrementAndGet();
+                    }
+                })
+                .contextWrite(Context.of(AtomicInteger.class, pageCount))
                 .flatMapMany(Page::getResult)
                 .repeat(10)
                 .doOnNext(i -> System.out.println("Received: " + i));
 
-
-        //don't change this code
+        // don't change this code
         StepVerifier.create(results)
-                    .expectNextCount(90)
-                    .verifyComplete();
+                .expectNextCount(90)
+                .verifyComplete();
 
         Assertions.assertEquals(3, pageWithError.get());
     }

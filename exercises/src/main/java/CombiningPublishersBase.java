@@ -113,14 +113,14 @@ public class CombiningPublishersBase {
         return Mono.<Void>fromRunnable(() -> {
             fileOpened.set(true);
             System.out.println("Opening file...");
-        }).delaySubscription(Duration.ofMillis(100));
+        }).delaySubscription(Duration.ofMillis(1000));
     }
 
     public Mono<Void> writeToFile(String content) {
         return Mono.<Void>fromRunnable(() -> {
             writtenToFile.set(true);
             System.out.println("Writing: " + content);
-        }).delaySubscription(Duration.ofMillis(1000));
+        }).delaySubscription(Duration.ofMillis(100));
     }
 
     public Flux<String> readFile() {
